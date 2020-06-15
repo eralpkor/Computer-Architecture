@@ -1,13 +1,30 @@
 """CPU functionality."""
-
+# LDI: load "immediate", store a value in a register, or "set this register to this value".
+# PRN: a pseudo-instruction that prints the numeric value stored in a register.
+# HLT: halt the CPU and exit the emulator.
 import sys
 
+# setup consts for op codes
+LDI = 0b10000010 # LDI R0,8 130
+PRN = 0b01000111 # PRN R0, 71
+HLT = 0b00000001 # HLT
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        # create 256 bites of memory
+        self.ram = [0] * 256
+        # 8 bit register
+        self.reg = [0] * 8
+        # program counter PC
+        self.pc = 0
+
+    def ram_read(self, addr):
+        self.ram[addr]
+
+    def ram_write(self, addr, value):
+        self.ram[addr] = value
 
     def load(self):
         """Load a program into memory."""
@@ -62,4 +79,32 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        # load the program into the memory
+        pc = self.load()
+        read_ram = self.ram_read
+        write_ram = self.ram_write
+
+        # run the program
+        while True:
+            pc = self.pc
+            # que the operation to start at default 0
+            op = read_ram(pc)
+
+            if op == LDI:
+                self.reg[read_ram(pc + 1)] = read_ram(pc + 2)
+                self.pc += 3
+            elif op == PRN:
+                print(self.reg[read_ram(pc + 1)])
+                self.pc += 2
+
+            elif op == HLT:
+                sys.exit(1)
+
+            else:
+                print('ERR: UNKNOWN INPUT:\t', op)
+                sys.exit(1)
+
+
+c = CPU()
+load = c.load()
+print('LOAD', load.program)
