@@ -20,32 +20,55 @@ class CPU:
         # program counter PC
         self.pc = 0
 
-    def ram_read(self, addr):
-        self.ram[addr]
+    # Inside the CPU, there are two internal registers used for memory operations: 
+    # the Memory Address Register (MAR) and the Memory Data Register (MDR).
+    def ram_read(self, mar):
+        self.ram[mar]
 
-    def ram_write(self, addr, value):
-        self.ram[addr] = value
+    def ram_write(self, mar, mdr):
+        self.ram[mar] = mdr
 
-    def load(self):
+    def load(self, file_name):
         """Load a program into memory."""
+        try:
+            address = 0
+            # open the file
+            with open(file_name) as f:
+                for line in f:
+                    # strip out the white space at a inline comment
+                    clean_line = line.strip().split('#')
+                    # grab string number
+                    value = clean_line[0].strip()
 
-        address = 0
+                    # check if val is blank, if it is skip to next line
+                    if value != '':
+                        # number string to integer
+                        num = int(value, 2) # we need to convert a binary string to a number ex. "100000010"
+                        self.ram[address] = num
+                        address += 1
+                    else:
+                        continue
 
-        # For now, we've just hardcoded a program:
+        except FileNotFoundError:
+            print("ERR: FILE NOT FOUND")
+            sys.exit(2)
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        # # For now, we've just hardcoded a program:
+
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
+
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
 
     def alu(self, op, reg_a, reg_b):
@@ -77,16 +100,16 @@ class CPU:
 
         print()
 
-    def run(self):
+    def run(self, file_name):
         """Run the CPU."""
         # load the program into the memory
-        pc = self.load()
+        self.load(file_name)
         read_ram = self.ram_read
         write_ram = self.ram_write
 
         # run the program
         while True:
-            pc = self.pc
+            pc = self.pc # program counter
             # que the operation to start at default 0
             op = read_ram(pc)
 
@@ -105,6 +128,27 @@ class CPU:
                 sys.exit(1)
 
 
+# if len(sys.argv) == 2:
+#     file_name = sys.argv[1]
+
+#     c = CPU()
+#     c.run(file_name)
+# else:
+#     # err message
+#     print("""
+# ERR: PLEASE PROVIDE A FILE NAME\n
+# ex python cpu.py examples/FILE_NAME
+# """)
+#     sys.exit(2)
+
+file_name = 'print8.ls8'
+
 c = CPU()
-load = c.load()
-print('LOAD', load.program)
+
+c.run(file_name)
+
+
+# file_name = sys.argv[1]
+# 
+
+
