@@ -163,9 +163,26 @@ class CPU:
                 self.reg[SP] += 1
                 self.pc += 2
 
-            #
-              
+            # Subroutine Calls
+            elif op == CALL:
+                # decrement the SP
+                self.reg[SP] -= 1
+                # get the current mem address that SP points to
+                stack_address = self.reg[SP]
+                # get return memory address
+                returned_address = pc + 2
+                # add return address to the stack
+                self.ram_write(stack_address, returned_address)
+                # set PC to the value in register
+                register_num = self.ram_read(pc + 1)
+                self.pc = self.reg[register_num]
 
+            elif op == RET:
+                # pop return memory address off the stack
+                # store poped memory address in the PC
+                self.pc = self.ram_read(self.reg[SP])
+                self.reg[SP] += 1
+                
             elif op == HLT:
                 sys.exit(1)
 
